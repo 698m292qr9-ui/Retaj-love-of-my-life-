@@ -1,298 +1,236 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // ===========================================
-    // 1. وظائف التنقل بين الصفحات (تم تبسيطها)
-    // ===========================================
-    // افترض أن لديك صفحات في الـ HTML كلها تحمل الكلاس .page
-    const allPages = document.querySelectorAll('.page');
-    const loveLanguagesPage = document.getElementById('love-languages-page'); // تم تصحيح النطاق هنا
+‏/* Custom Arabic Font - نستخدم خط "Cairo" الذي يعطي شكلاً مشابهاً للموجود في الصورة */
+‏@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
 
-    function navigateTo(targetId) {
-        allPages.forEach(page => page.classList.remove('active'));
-        const targetPage = document.getElementById(targetId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            window.scrollTo(0, 0); 
+‏:root {
+‏    --dark-bg: #1a0033; /* خلفية أرجوانية داكنة جداً */
+‏    --star-color: #ffffff; /* لون النجوم أبيض فاتح */
+‏    --main-text-color: #ffffff; /* لون النص الرئيسي أبيض */
+‏    --highlight-text-color: #f1c40f; /* لون ذهبي/أصفر للعناوين المميزة */
+‏    --button-bg: rgba(70, 0, 100, 0.7); /* خلفية زر أرجوانية شفافة */
+‏    --button-border: #f1c40f; /* حدود الزر باللون الذهبي */
+‏    --button-hover-bg: rgba(100, 0, 150, 0.8); /* خلفية زر عند التحويم */
+‏    --container-bg: rgba(0, 0, 0, 0.3); /* خلفية حاوية شفافة أكثر */
+‏    --font-family: 'Cairo', sans-serif;
+‏    --base-font-size: 1.2rem; /* خط أساسي أكبر قليلاً */
+}
 
-            // تهيئة محتوى الصفحة عند الانتقال إليها
-            if (targetId === 'quiz-page') {
-                loadQuizQuestion(0); // ابدأ من السؤال الأول (فهرس 0)
-            } else if (targetId === 'love-languages-page') {
-                initLoveLanguages();
-            } else if (targetId === 'home-page') {
-                // عند العودة للرئيسية، أعد تشغيل الترحيب
-                arGreeting.innerHTML = '';
-                enGreeting.innerHTML = '';
-                startTypingGreetings();
-            }
-        }
-    }
+/* التنسيقات العامة */
+‏body {
+‏    font-family: var(--font-family);
+‏    background-color: var(--dark-bg);
+‏    color: var(--main-text-color);
+‏    margin: 0;
+‏    padding: 0;
+‏    direction: rtl;
+‏    text-align: right;
+‏    font-size: var(--base-font-size);
+‏    line-height: 1.6;
+‏    min-height: 100vh;
+‏    display: flex; 
+‏    flex-direction: column;
+‏    align-items: center;
+‏    justify-content: center;
+‏    transition: background-color 0.5s ease;
+}
 
-    // إعداد أزرار القائمة والتنقل
-    document.querySelectorAll('.menu-button, .back-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = e.currentTarget.getAttribute('data-target');
-            navigateTo(targetId);
-        });
-    });
+/* خلفية النجوم (أكثر وضوحاً كما في الصورة) */
+‏.star-background {
+‏    position: fixed;
+‏    top: 0;
+‏    left: 0;
+‏    width: 100%;
+‏    height: 100%;
+‏    background-image: 
+‏        radial-gradient(circle at 10% 10%, var(--star-color) 1px, transparent 1.5px),
+‏        radial-gradient(circle at 90% 90%, var(--star-color) 1.5px, transparent 2.5px),
+‏        radial-gradient(circle at 50% 30%, var(--star-color) 0.8px, transparent 2px),
+‏        radial-gradient(circle at 70% 70%, var(--star-color) 1.2px, transparent 2.2px),
+‏        radial-gradient(circle at 30% 60%, var(--star-color) 1.1px, transparent 2.1px),
+‏        var(--dark-bg);
+‏    background-size: 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, cover; /* أحجام مختلفة للنجوم */
+‏    background-position: 0 0, 60px 60px, 30px 30px, 90px 90px, 45px 45px; /* مواقع مختلفة للنجوم */
+‏    z-index: -1;
+}
 
-    // ===========================================
-    // 2. الترحيب المتحرك
-    // ===========================================
-    const arGreeting = document.querySelector('.greeting-text');
-    const enGreeting = document.querySelector('.greeting-text-en');
+‏.container {
+‏    width: 90%;
+‏    max-width: 600px; /* لتقريب الحجم من الصورة */
+‏    margin: 20px auto;
+‏    padding: 30px;
+‏    background-color: var(--container-bg); /* خلفية شفافة للحاوية */
+‏    border-radius: 15px; /* حواف دائرية */
+‏    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* ظل خفيف */
+‏    text-align: center; /* توسيط المحتوى داخل الحاوية */
+}
 
-    const arMessage = "مرحبًا بكِ يا نجمتي الساطعة";
-    const enMessage = "Welcome, My Bright Star";
+‏h1, h2, h3 {
+‏    color: var(--main-text-color); /* العناوين الرئيسية باللون الأبيض */
+‏    text-align: center;
+‏    margin-bottom: 20px;
+‏    font-weight: bold; /* خط سميك */
+}
 
-    function typeText(element, message, delay) {
-        return new Promise(resolve => {
-            let i = 0;
-            function typing() {
-                if (i < message.length) {
-                    element.innerHTML += message.charAt(i);
-                    i++;
-                    setTimeout(typing, delay);
-                } else {
-                    resolve();
-                }
-            }
-            typing();
-        });
-    }
+‏h1 {
+‏    font-size: 2.5em; /* حجم كبير للعنوان الرئيسي */
+‏    color: var(--highlight-text-color); /* لون ذهبي للعنوان الرئيسي */
+‏    margin-bottom: 30px;
+}
 
-    async function startTypingGreetings() {
-        await typeText(arGreeting, arMessage, 80); 
-        await typeText(enGreeting, enMessage, 60);
-    }
+/* الأزرار / الخيارات (تعديل جذري لتطابق الصورة) */
+‏.option-button, .button {
+‏    display: block;
+‏    width: 100%;
+‏    padding: 20px 25px; /* حجم أكبر للزر */
+‏    margin: 20px auto; /* توسيط وزيادة المسافة */
+‏    border: 3px solid var(--button-border); /* حدود ذهبية سميكة */
+‏    background-color: var(--button-bg); 
+‏    color: var(--main-text-color);
+‏    font-size: 1.5em; /* خط أكبر داخل الزر */
+‏    cursor: pointer;
+‏    border-radius: 15px; /* حواف دائرية واضحة */
+‏    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+‏    text-align: center;
+‏    font-weight: bold;
+‏    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* ظل للزر */
+}
 
-    startTypingGreetings();
+‏.option-button:hover, .button:hover {
+‏    background-color: var(--button-hover-bg);
+‏    border-color: var(--highlight-text-color);
+‏    color: var(--highlight-text-color);
+}
 
-    // ===========================================
-    // 3. نظام الأسئلة (Quiz Logic) - المنطق المُعدّل لزر التالي
-    // ===========================================
-    const quizContent = document.getElementById('quiz-content');
-    const feedbackEmoji = document.getElementById('feedback-emoji');
+/* النصوص الثانوية داخل الأزرار */
+‏.button-subtitle {
+‏    display: block;
+‏    font-size: 0.8em; /* خط أصغر للترجمة */
+‏    opacity: 0.7;
+‏    margin-top: 5px;
+}
 
-    const quizQuestions = [
-        // السؤال 1 (فهرس 0)
-        {
-            id: 1,
-            question: "ما مقدار حُب شادي لأميرته ريتاج؟",
-            options: ["كعدد النجوم في السماء", "كعدد قطرات المطر", "كحجم ماء البحر"],
-            // تم حذف الإيموجي
-            feedback: 'غلط! لأن حُب شادي لأميرته ريتاج ليس له حدود ولا قياس.', 
-        },
-        // السؤال 2 (فهرس 1)
-        {
-            id: 2,
-            question: "ما هو الشيء الجميل في أميرة شادي ريتاج؟",
-            options: ["عيونها", "ابتسامتها", "صوتها", "شعرها", "أسلوبها"],
-            // تم حذف الإيموجي وتعديل النص
-            feedback: 'غلط! يا فاتنة القلب، لأن الحب لا يختار شيئاً واحداً... كل تفاصيل ريتاج فاتنة وليس لها مثيل.',
-        },
-        // السؤال 3 (فهرس 2) - إدخال نص
-        {
-            id: 3,
-            question: "ما مقدار حُبكِ لشادي؟",
-            inputType: 'text',
-        },
-        // السؤال 4 (فهرس 3) - الأخير
-        {
-            id: 4,
-            question: "ماذا أستحق منكِ؟",
-            options: ["بوسة (فيديو)", "عشر كلمات أحبك (فيديو أو فويس)", "صورة جميلة لكِ وأنتِ مبتسمة", "جميع ما سبق"],
-            feedback: 'انتظرها منكِ بفارغ الصبر! أُحِبُكِ ❤️',
-        }
-    ];
+/* نماذج الإدخال - تبقى كما هي تقريباً مع تحديث الألوان */
+‏input[type="text"], input[type="password"], textarea {
+‏    width: 80%; /* عرض أقل ليتناسب مع التصميم */
+‏    padding: 15px;
+‏    margin: 15px auto;
+‏    border: 1px solid var(--button-border); /* حدود ذهبية */
+‏    background-color: rgba(255, 255, 255, 0.1); /* خلفية شفافة فاتحة */
+‏    color: var(--main-text-color);
+‏    border-radius: 10px;
+‏    box-sizing: border-box;
+‏    text-align: center; /* توسيط النص المدخل */
+‏    font-size: var(--base-font-size);
+‏    display: block; /* لجعل margin auto يعمل */
+}
 
-    function showFeedback(message) { // تم إزالة وسيط الإيموجي
-        // إزالة أي تغذية راجعة قديمة
-        const oldFeedback = quizContent.querySelector('.quiz-feedback');
-        if (oldFeedback) oldFeedback.remove();
+/* رسائل الخطأ (تعديل بسيط في الخلفية واللون) */
+‏.feedback-box {
+‏    text-align: center;
+‏    margin-top: 30px;
+‏    padding: 20px;
+‏    background-color: rgba(192, 57, 43, 0.7); /* لون أحمر أغمق قليلاً وشفافية */
+‏    border-radius: 10px;
+‏    display: none; 
+‏    animation: fadn 0.5s ease-out;
+‏    border: 2px solid var(--highlight-text-color); /* حدود ذهبية */
+}
 
-        const feedbackBox = document.createElement('div');
-        feedbackBox.className = 'quiz-feedback';
-        feedbackBox.innerHTML = message;
-        quizContent.appendChild(feedbackBox);
-    }
+‏.feedback-box p {
+‏    color: var(--main-text-color); /* النص باللون الأبيض */
+‏    font-size: var(--base-font-size);
+}
 
-    function loadQuizQuestion(index) {
-        const q = quizQuestions[index];
-        if (!q) return; 
+‏@keyframes fadeIn {
+‏    from { opacity: 0; transform: translateY(20px); }
+‏    to { opacity: 1; transform: translateY(0); }
+}
 
-        quizContent.innerHTML = ''; 
-
-        const qBox = document.createElement('div');
-        qBox.className = 'question-box';
-        qBox.innerHTML = `<h4>السؤال ${q.id}: ${q.question}</h4>`;
-
-        if (q.inputType === 'text') {
-            // السؤال الثالث (إدخال نص)
-            qBox.innerHTML += `
-                <input type="text" id="q3-input" placeholder="اكتبي إجابتكِ هنا بصدق..." dir="rtl">
-                <button class="option-button" id="q3-submit-btn">إرسال الإجابة</button>
-            `;
-            quizContent.appendChild(qBox);
-
-            document.getElementById('q3-submit-btn').onclick = () => {
-                const answer = document.getElementById('q3-input').value;
-                if (answer.trim()) {
-                    // الانتقال لصفحة الشكر بعد الإجابة
-                    quizContent.innerHTML = `
-                        <div class="quiz-feedback" style="background-color:#FFD700; color:#0A0A2A;">
-                            <h4 style="color:#0A0A2A;">شُكرًا لكِ يا أجمل أميرة! 💖</h4>
-                            <p style="font-size: 1.2em; border-right: 3px solid #0A0A2A; padding-right: 10px;">" ${answer} "</p>
-                            <p>أُحِبُكِ، أُحِبُكِ يا أميرتي الجميلة.</p>
-                        </div>
-                        <div class="quiz-next-question">
-                            <button onclick="loadQuizQuestion(3)">التالي → (السؤال الأخير)</button>
-                        </div>
-                    `;
-                }
-            };
-        } else {
-            // الأسئلة ذات الخيارات (1، 2، 4)
-            const optionsDiv = document.createElement('div');
-            optionsDiv.className = 'quiz-options';
-
-            q.options.forEach((optionText) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-button';
-                btn.textContent = optionText;
-                // تم تمرير qBox هنا للتحكم في الأزرار
-                btn.onclick = () => handleAnswer(q, optionText, qBox, index); 
-                optionsDiv.appendChild(btn);
-            });
-
-            qBox.appendChild(optionsDiv);
-            quizContent.appendChild(qBox);
-        }
-    }
-
-    function handleAnswer(q, selectedOption, qBox, index) {
-        // تعطيل جميع الأزرار بعد أول إجابة
-        qBox.querySelectorAll('.option-button').forEach(btn => btn.disabled = true); 
-
-        if (q.id === 1 || q.id === 2) {
-            // الأسئلة 1 و 2 (إجابة خاطئة ثابتة)
-            showFeedback(`<p>${q.feedback}</p>`);
-
-            const nextBtnContainer = document.createElement('div');
-            nextBtnContainer.className = 'quiz-next-question';
-            nextBtnContainer.innerHTML = `<button onclick="loadQuizQuestion(${index + 1})">التالي →</button>`;
-            quizContent.appendChild(nextBtnContainer);
-
-        } else if (q.id === 4) {
-            // السؤال 4 (كل الإجابات صحيحة)
-            showFeedback(`<p>${q.feedback}</p>`);
-
-            // الانتقال لصفحة الشكر النهائية
-            const nextBtnContainer = document.createElement('div');
-            nextBtnContainer.className = 'quiz-next-question';
-            nextBtnContainer.innerHTML = `<button onclick="navigateTo('home-page')">العودة للقائمة الرئيسية</button>`;
-            quizContent.appendChild(nextBtnContainer);
-        }
-    }
+/* تنسيق قائمة التنقل (الرئيسية) - تم دمجها مع الأزرار العامة */
+‏.main-menu a {
+‏    background-color: var(--button-bg);
+‏    border: 3px solid var(--button-border);
+‏    color: var(--main-text-color);
+‏    margin: 20px auto;
+‏    font-size: 1.5em;
+‏    padding: 20px 25px;
+}
+‏.main-menu a:hover {
+‏    background-color: var(--button-hover-bg);
+‏    border-color: var(--highlight-text-color);
+‏    color: var(--highlight-text-color);
+}
 
 
-    // ===========================================
-    // 4. نظام أحبك بكل اللغات
-    // ===========================================
-    const loveDisplay = document.getElementById('language-display');
-    const loveLanguages = [
-        "أُحِبُك (Arabic)", "I Love You (English)", "Te Amo (Spanish)", 
-        "Je t'aime (French)", "Ich liebe dich (German)", "Ti amo (Italian)",
-        "我爱你 (Wǒ ài nǐ) (Chinese)", "사랑해 (Saranghae) (Korean)", "愛してる (Aishiteru) (Japanese)"
-    ];
-    let langIndex = 0;
+/* تنسيق قسم وقت اللقاء (المعدل: حذف رمز قطرة المطر) */
+‏.meeting-time {
+‏    text-align: center;
+‏    margin-top: 50px;
+‏    padding-top: 30px;
+‏    border-top: none; /* إزالة الخط الفاصل */
+}
 
-    function initLoveLanguages() {
-        if(loveDisplay) { // تأكد من وجود العنصر
-            loveDisplay.textContent = 'اضغطي هنا...';
-            langIndex = 0;
-        }
-    }
+‏.meeting-e h2 {
+‏    color: var(--highlight-text-color); /* عنوان ابيض */
+‏    font-size: 2em;
+‏    margin-bottom: 10px;
+}
 
-    if(loveLanguagesPage) {
-        loveLanguagesPage.addEventListener('click', (e) => {
-            if (e.target.id === 'language-display' || e.target.closest('.page')) {
-                if (langIndex < loveLanguages.length) {
-                    loveDisplay.textContent = loveLanguages[langIndex];
-                    loveDisplay.style.color = `hsl(${langIndex * 40}, 80%, 70%)`;
-                    langIndex++;
-                } else {
-                    loveDisplay.textContent = 'أُحِبُكِ! (الجميع يجمع على ذلك)';
-                    loveDisplay.style.color = 'gold';
-                }
-            }
-        });
-    }
-    
-    // ===========================================
-    // 5. تأثير النجوم في الخلفية (Stars Canvas)
-    // ===========================================
-    // بقية كود الـ Canvas يبقى كما هو...
-    const starCanvas = document.getElementById('star-canvas');
-    if (starCanvas) {
-        const starCtx = starCanvas.getContext('2d');
-        
-        starCanvas.width = window.innerWidth;
-        starCanvas.height = window.innerHeight;
+‏.meeting-time p {
+‏    font-size: 1.1em;
+‏    color: rgba(255, 255, 255, 0.8);
+‏    margin-bottom: 15px;
+}
 
-        let stars = [];
-        const numStars = 150;
+‏.date-box {
+‏    font-size: 2.8em; /* حجم متوسط للتاريخ */
+‏    font-weight: bold;
+‏    color: var(--highlight-text-color); /* لون ازرق غامق */
+‏    position: relative;
+‏    display: inline-block;
+‏    padding: 15px 30px;
+‏    border: 4px solid var(--highlight-text-color); /**/
+‏    border-radius: 15px;
+‏    box-shadow: 0 0 25px rgba(241, 196, 15, 0.5); /* */
+‏    background-color: rgba(0, 0, 0, 0.4); /* خلفية شفافة */
+‏    letter-spacing: 2px; /* تباعد الحروف */
+}
 
-        function Star() {
-            this.x = Math.random() * starCanvas.width;
-            this.y = Math.random() * starCanvas.height;
-            this.radius = Math.random() * 1.5 + 0.5;
-            this.alpha = Math.random(); 
-            this.velocity = Math.random() * 0.05 + 0.01;
-        }
+/* تنسيق صفحة 'أحبك' بلغات مختلفة */
+‏.love-container {
+‏    text-align: center;
+‏    cursor: pointer;
+‏    padding: 50px;
+‏    background-image: linear-gradient(to bottom right, #4a0072, #2c003e); /* خلفية أرجوانية متدرجة */
+‏    : 3px solid var(--highlight-text-color);
+}
 
-        Star.prototype.draw = function() {
-            starCtx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
-            starCtx.beginPath();
-            starCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            starCtx.fill();
-        };
+‏.love-message {
+‏    font-size: 3.5em; /* حجم وسط */
+‏    min-height: 120px;
+‏    display: flex;
+‏    align-items: center;
+‏    justify-content: center;
+‏    transition: color 0.3s ease, transform 0.3s;
+‏    color: var(--highlight-text-color); /* لون ازرق غامق */
+‏    margin-top: 50px;
+‏    font-: bold;
+‏    text-shadow: 0 0 15px rgba(241, 196, 15, 0.8); /**/
+}
 
-        Star.prototype.update = function() {
-            this.alpha += this.velocity;
-            if (this.alpha > 1 || this.alpha < 0) {
-                this.velocity = -this.velocity;
-            }
-        };
+‏.love-message:hover {
+‏    transform: scale(1.05);
+}
 
-        function initStars() {
-            for (let i = 0; i < numStars; i++) {
-                stars.push(new Star());
-            }
-        }
+/* تنسيق الصورة النهائية */
+‏.final-image-container {
+‏    text-align: center;
+‏    margin-top: 40px;
+}
 
-        function animateStars() {
-            // استخدم لون الخلفية الداكن بدلاً من المسح الكامل
-            starCtx.fillStyle = '#0A0A2A'; 
-            starCtx.fillRect(0, 0, starCanvas.width, starCanvas.height);
-            
-            for (let i = 0; i < stars.length; i++) {
-                stars[i].update();
-                stars[i].draw();
-            }
-            requestAnimationFrame(animateStars);
-        }
-        
-        initStars();
-        animateStars();
-
-        window.addEventListener('resize', () => {
-            starCanvas.width = window.innerWidth;
-            starCanvas.height = window.innerHeight;
-        });
-    }
-
-    // تحميل الصفحة الرئيسية عند البداية
-    // إذا كنت تستخدم نظام التنقل الموضح، يجب أن يتم تنفيذ هذا
-    // navigateTo('home-page'); 
-});
+‏.final-image {
+‏    max-width: 100%;
+‏    height: auto;
+‏    border: 5px solid var(--highlight-text-color); /* حدود زرقاء*/
+‏    border-radius: 15px;
+‏    box-shadow: 0 0 25px var(--highlight-text-color);
+}
