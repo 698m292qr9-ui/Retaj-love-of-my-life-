@@ -1,21 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ===========================================
-    // 1. وظائف التنقل بين الصفحات
+    // 1. وظائف التنقل بين الصفحات (تم تبسيطها)
     // ===========================================
+    // افترض أن لديك صفحات في الـ HTML كلها تحمل الكلاس .page
     const allPages = document.querySelectorAll('.page');
+    const loveLanguagesPage = document.getElementById('love-languages-page'); // تم تصحيح النطاق هنا
 
     function navigateTo(targetId) {
         allPages.forEach(page => page.classList.remove('active'));
-        document.getElementById(targetId).classList.add('active');
-        window.scrollTo(0, 0); 
-    }
+        const targetPage = document.getElementById(targetId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            window.scrollTo(0, 0); 
 
-    // إعداد أزرار القائمة والتنقل
-    document.querySelectorAll('.menu-button, .back-button').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = e.currentTarget.getAttribute('data-target');
-            
             // تهيئة محتوى الصفحة عند الانتقال إليها
             if (targetId === 'quiz-page') {
                 loadQuizQuestion(0); // ابدأ من السؤال الأول (فهرس 0)
@@ -27,6 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 enGreeting.innerHTML = '';
                 startTypingGreetings();
             }
+        }
+    }
+
+    // إعداد أزرار القائمة والتنقل
+    document.querySelectorAll('.menu-button, .back-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = e.currentTarget.getAttribute('data-target');
             navigateTo(targetId);
         });
     });
@@ -64,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startTypingGreetings();
 
     // ===========================================
-    // 3. نظام الأسئلة (Quiz Logic) - **المنطق المُعدّل لزر التالي**
+    // 3. نظام الأسئلة (Quiz Logic) - المنطق المُعدّل لزر التالي
     // ===========================================
     const quizContent = document.getElementById('quiz-content');
     const feedbackEmoji = document.getElementById('feedback-emoji');
@@ -75,14 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 1,
             question: "ما مقدار حُب شادي لأميرته ريتاج؟",
             options: ["كعدد النجوم في السماء", "كعدد قطرات المطر", "كحجم ماء البحر"],
-            feedback: 'غلط! 😡🎀 لأن حُب شادي لأميرته ريتاج ليس له حدود!',
+            // تم حذف الإيموجي
+            feedback: 'غلط! لأن حُب شادي لأميرته ريتاج ليس له حدود ولا قياس.', 
         },
         // السؤال 2 (فهرس 1)
         {
             id: 2,
             question: "ما هو الشيء الجميل في أميرة شادي ريتاج؟",
             options: ["عيونها", "ابتسامتها", "صوتها", "شعرها", "أسلوبها"],
-            feedback: 'غلط! 🥺🎀 ليس هناك شيء وحيد جميل بريتاج، بل كل تفاصيلها ليس لها مثيل.',
+            // تم حذف الإيموجي وتعديل النص
+            feedback: 'غلط! يا فاتنة القلب، لأن الحب لا يختار شيئاً واحداً... كل تفاصيل ريتاج فاتنة وليس لها مثيل.',
         },
         // السؤال 3 (فهرس 2) - إدخال نص
         {
@@ -99,25 +106,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    function showFeedback(emojiCode, message) {
-        feedbackEmoji.style.display = 'block';
-        feedbackEmoji.innerHTML = `<span style="position:relative;">${emojiCode}</span>`;
+    function showFeedback(message) { // تم إزالة وسيط الإيموجي
+        // إزالة أي تغذية راجعة قديمة
+        const oldFeedback = quizContent.querySelector('.quiz-feedback');
+        if (oldFeedback) oldFeedback.remove();
 
         const feedbackBox = document.createElement('div');
         feedbackBox.className = 'quiz-feedback';
         feedbackBox.innerHTML = message;
         quizContent.appendChild(feedbackBox);
-
-        setTimeout(() => {
-            feedbackEmoji.style.display = 'none';
-        }, 1500);
     }
 
     function loadQuizQuestion(index) {
         const q = quizQuestions[index];
-        if (!q) return; // لضمان عدم الخروج عن نطاق المصفوفة
+        if (!q) return; 
 
-        quizContent.innerHTML = ''; // مسح المحتوى القديم
+        quizContent.innerHTML = ''; 
 
         const qBox = document.createElement('div');
         qBox.className = 'question-box';
@@ -136,12 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (answer.trim()) {
                     // الانتقال لصفحة الشكر بعد الإجابة
                     quizContent.innerHTML = `
-                        <div class="quiz-feedback" style="background-color:#7CFC00; color:#0A0A2A;">
+                        <div class="quiz-feedback" style="background-color:#FFD700; color:#0A0A2A;">
                             <h4 style="color:#0A0A2A;">شُكرًا لكِ يا أجمل أميرة! 💖</h4>
                             <p style="font-size: 1.2em; border-right: 3px solid #0A0A2A; padding-right: 10px;">" ${answer} "</p>
                             <p>أُحِبُكِ، أُحِبُكِ يا أميرتي الجميلة.</p>
                         </div>
-                        <div class="quiz-next-question"><button onclick="loadQuizQuestion(3)">التالي → (السؤال الأخير)</button></div>
+                        <div class="quiz-next-question">
+                            <button onclick="loadQuizQuestion(3)">التالي → (السؤال الأخير)</button>
+                        </div>
                     `;
                 }
             };
@@ -154,7 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const btn = document.createElement('button');
                 btn.className = 'option-button';
                 btn.textContent = optionText;
-                btn.onclick = () => handleAnswer(q, optionText, qBox, index);
+                // تم تمرير qBox هنا للتحكم في الأزرار
+                btn.onclick = () => handleAnswer(q, optionText, qBox, index); 
                 optionsDiv.appendChild(btn);
             });
 
@@ -164,31 +171,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleAnswer(q, selectedOption, qBox, index) {
-        qBox.querySelector('.quiz-options').style.pointerEvents = 'none'; // تعطيل الأزرار
+        // تعطيل جميع الأزرار بعد أول إجابة
+        qBox.querySelectorAll('.option-button').forEach(btn => btn.disabled = true); 
 
         if (q.id === 1 || q.id === 2) {
             // الأسئلة 1 و 2 (إجابة خاطئة ثابتة)
-            showFeedback(q.id === 1 ? '😡' : '🥺', q.feedback);
+            showFeedback(`<p>${q.feedback}</p>`);
 
-            const nextBtn = document.createElement('div');
-            nextBtn.className = 'quiz-next-question';
-            nextBtn.innerHTML = `<button onclick="loadQuizQuestion(${index + 1})">التالي →</button>`;
-            quizContent.appendChild(nextBtn);
+            const nextBtnContainer = document.createElement('div');
+            nextBtnContainer.className = 'quiz-next-question';
+            nextBtnContainer.innerHTML = `<button onclick="loadQuizQuestion(${index + 1})">التالي →</button>`;
+            quizContent.appendChild(nextBtnContainer);
 
         } else if (q.id === 4) {
             // السؤال 4 (كل الإجابات صحيحة)
-            showFeedback('✅', q.feedback);
+            showFeedback(`<p>${q.feedback}</p>`);
 
             // الانتقال لصفحة الشكر النهائية
-            setTimeout(() => {
-                quizContent.innerHTML = `
-                    <div class="quiz-feedback" style="background-color:#FFD700; color:#0A0A2A;">
-                        <h4 style="color:#0A0A2A;">إجابة رائعة! </h4>
-                        <p style="font-size: 1.2em;">انتظرها منكِ بفارغ الصبر. أُحِبُكِ ❤️</p>
-                    </div>
-                    <div class="quiz-next-question"><button onclick="navigateTo('home-page')">العودة للقائمة الرئيسية</button></div>
-                `;
-            }, 1500);
+            const nextBtnContainer = document.createElement('div');
+            nextBtnContainer.className = 'quiz-next-question';
+            nextBtnContainer.innerHTML = `<button onclick="navigateTo('home-page')">العودة للقائمة الرئيسية</button>`;
+            quizContent.appendChild(nextBtnContainer);
         }
     }
 
@@ -205,28 +208,35 @@ document.addEventListener('DOMContentLoaded', () => {
     let langIndex = 0;
 
     function initLoveLanguages() {
-        loveDisplay.textContent = 'اضغطي هنا...';
-        langIndex = 0;
+        if(loveDisplay) { // تأكد من وجود العنصر
+            loveDisplay.textContent = 'اضغطي هنا...';
+            langIndex = 0;
+        }
     }
 
-    loveLanguagesPage.addEventListener('click', () => {
-        if (langIndex < loveLanguages.length) {
-            loveDisplay.textContent = loveLanguages[langIndex];
-            loveDisplay.style.color = `hsl(${langIndex * 40}, 80%, 70%)`;
-            langIndex++;
-        } else {
-            loveDisplay.textContent = 'أُحِبُكِ! (الجميع يجمع على ذلك)';
-        }
-    });
+    if(loveLanguagesPage) {
+        loveLanguagesPage.addEventListener('click', (e) => {
+            if (e.target.id === 'language-display' || e.target.closest('.page')) {
+                if (langIndex < loveLanguages.length) {
+                    loveDisplay.textContent = loveLanguages[langIndex];
+                    loveDisplay.style.color = `hsl(${langIndex * 40}, 80%, 70%)`;
+                    langIndex++;
+                } else {
+                    loveDisplay.textContent = 'أُحِبُكِ! (الجميع يجمع على ذلك)';
+                    loveDisplay.style.color = 'gold';
+                }
+            }
+        });
+    }
     
     // ===========================================
     // 5. تأثير النجوم في الخلفية (Stars Canvas)
     // ===========================================
+    // بقية كود الـ Canvas يبقى كما هو...
     const starCanvas = document.getElementById('star-canvas');
-    const starCtx = starCanvas.getContext('2d');
-    
-    // تأكد من أن الدالة تعمل فقط إذا كان Canvas موجوداً
-    if(starCanvas) {
+    if (starCanvas) {
+        const starCtx = starCanvas.getContext('2d');
+        
         starCanvas.width = window.innerWidth;
         starCanvas.height = window.innerHeight;
 
@@ -262,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function animateStars() {
-            starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+            // استخدم لون الخلفية الداكن بدلاً من المسح الكامل
             starCtx.fillStyle = '#0A0A2A'; 
             starCtx.fillRect(0, 0, starCanvas.width, starCanvas.height);
             
@@ -283,5 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // تحميل الصفحة الرئيسية عند البداية
-    navigateTo('home-page');
+    // إذا كنت تستخدم نظام التنقل الموضح، يجب أن يتم تنفيذ هذا
+    // navigateTo('home-page'); 
 });
